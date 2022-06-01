@@ -1,6 +1,3 @@
-import psutil
-import os
-
 from discord.ext import commands
 from discord.ext.commands import errors
 
@@ -8,7 +5,6 @@ from discord.ext.commands import errors
 class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.process = psutil.Process(os.getpid())
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, err):
