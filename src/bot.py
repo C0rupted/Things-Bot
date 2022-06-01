@@ -1,31 +1,35 @@
-import os
-import json
-import requests
 import discord
 
-TOKEN = os.getenv('DISCORD_TOKEN')
+from discord.ext.commands import AutoShardedBot
 
-client = discord.Client()
+from cogs.encryption import Encryption
+from cogs.events import Events
+from cogs.info import Information
+from cogs.fun import Fun_Commands
 
-@client.event
-async def on_ready():
-    print(f'{client.user} has connected to Discord!')
-
-
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-
-    if message.content == '!hello':
-        await message.channel.send(f"Hello, @{message.author}")
-    
-    if message.content == "!meme":
-        content = requests.get("https://meme-api.herokuapp.com/gimme/dankmemes").text
-        data = json.loads(content)
-        meme = discord.Embed(title=data['title'], url=data['postLink'])
-        meme.set_image(url=f"{data['url']}")
-        await message.channel.send(embed=meme)
+class Bot(AutoShardedBot):
+    def __init__(self, *args, prefix=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.prefix = prefix
 
 
-client.run(TOKEN)
+    async def on_ready(self):
+        await self.change_presence(
+            activity=discord.Activity(
+                type=discord.ActivityType.watching, name="!help"
+            ),
+            status=discord.Status.online
+        )
+
+        self.add_cog(Events(self))
+        self.add_cog(Encryption(self))
+        self.add_cog(Fun_Commands(self))
+        self.add_cog(Information(self))
+
+        print("Logged in")
+
+    async def on_message(self, msg):
+        if not self.is_ready() or msg.author.bot:
+            return
+
+        await self.process_commands(msg)
