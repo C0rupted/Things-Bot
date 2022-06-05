@@ -1,13 +1,14 @@
 import json
 import random
 import discord
-import requests
+import aiohttp
 
 from io import BytesIO
 from discord.ext import commands
 import urllib.request as request
 
 from lib.data import eight_ball, bonk_objects
+from lib.utils import api_call
 
 
 def list_to_text(list: list):
@@ -49,7 +50,7 @@ class Fun_Commands(commands.Cog):
                             color=discord.Color.random())
         await ctx.send(embed=embed)
 
-    @commands.command(name="bonk", aliases=["hit"])
+    @commands.command(aliases=["hit"])
     @commands.cooldown(rate=1, per=10.0, type=commands.BucketType.user)
     async def bonk(self, ctx, member: str, *, reason = "no reason"):
         """'Bonk' someone with objects for specified reasons!"""
@@ -61,19 +62,28 @@ class Fun_Commands(commands.Cog):
             await ctx.send(f"{ctx.author.mention} bonked {member} with {random.choice(bonk_objects)} for {reason}.")
 
 
-    @commands.command(name='quote')
+    @commands.command()
     @commands.cooldown(rate=1, per=10.0, type=commands.BucketType.user)
     async def quote(self, ctx):
         """ Enlighten yourself with smart stuff from smart people """
-        response = requests.get("https://zenquotes.io/api/random")
-        json_data = json.loads(response.text)
-        quote = json_data[0]["q"] + " -" + json_data[0]["a"]
+        response = await api_call("https://zenquotes.io/api/random")
+        quote = response[0]["q"] + "     -" + response[0]["a"]
 
         if quote == 'Too many requests. Obtain an auth key for unlimited access. -ZenQuotes.io':
             await ctx.send(
                 "Do you seriously need more quotes? Wait 30 seconds please")
         else:
             await ctx.send(quote)
+
+    @commands.command()
+    async def advice(self, ctx):
+        response = ""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"https://api.adviceslip.com/advice") as response:
+                response = await response.read()
+                response = json.loads(response)
+        advice = response['slip']['advice']
+        await ctx.message.reply(advice)
 
     @commands.command()
     @commands.cooldown(rate=1, per=2.0, type=commands.BucketType.user)
@@ -108,11 +118,10 @@ class Fun_Commands(commands.Cog):
     @commands.cooldown(rate=1, per=5.0, type=commands.BucketType.user)
     async def meme(self, ctx):
         """ Get some fast laughs """
-        content = requests.get("https://meme-api.herokuapp.com/gimme").text
-        data = json.loads(content)
-        meme = discord.Embed(title=data['title'], url=data['postLink'], 
+        response = await api_call("https://meme-api.herokuapp.com/gimme")
+        meme = discord.Embed(title=response['title'], url=response['postLink'], 
                             color=discord.Color.random())
-        meme.set_image(url=f"{data['url']}")
+        meme.set_image(url=f"{response['url']}")
         await ctx.send(embed=meme)
     
     @commands.command(aliases=["slots", "bet"])

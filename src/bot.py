@@ -6,6 +6,9 @@ from cogs.encryption import Encryption
 from cogs.events import Events
 from cogs.info import Information
 from cogs.fun import Fun_Commands
+from cogs.economy import Economy
+from cogs.music import Music
+
 
 class Bot(AutoShardedBot):
     def __init__(self, *args, prefix=None, **kwargs):
@@ -25,6 +28,8 @@ class Bot(AutoShardedBot):
         self.add_cog(Encryption(self))
         self.add_cog(Fun_Commands(self))
         self.add_cog(Information(self))
+        self.add_cog(Economy(self))
+        self.add_cog(Music(self))
 
         print("Logged in")
 

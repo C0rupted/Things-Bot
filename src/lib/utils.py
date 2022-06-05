@@ -1,4 +1,5 @@
 import time
+import aiohttp
 import datetime
 
 def timetext(name):
@@ -16,3 +17,10 @@ def date(target, clock: bool = True, seconds: bool = False, ago: bool = False, o
     if only_ago:
         timestamp = f"<t:{unix}:R>"
     return timestamp
+
+
+async def api_call(call_uri):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(f"{call_uri}") as response:
+            response = await response.json()
+            return response
