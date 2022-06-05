@@ -102,4 +102,8 @@ you don't have enough moolah in your account."""
     @commands.command()
     async def register(self, ctx):
         """ Get a free wallet and bank account """
-        await db.register_user(ctx.message.author)
+        try:
+            await db.register_user(ctx.message.author)
+            await ctx.send("Enjoy your free stuff!")
+        except:
+            await ctx.send("Seems like you already have that stuff")

@@ -39,4 +39,4 @@ async def test():
     )
     await conn.close()
 
-#asyncio.get_event_loop().run_until_complete(init())
+#asyncio.get_event_loop().run_until_complete(test())
