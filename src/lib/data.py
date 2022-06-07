@@ -1,4 +1,4 @@
-# File that contains many lists and data that the bot relies on
+# File that contains many lists and much data that the bot relies on
 
 eight_ball = ["It is certain", "It is decidedly so", "Without a doubt", 
               "Yes, definitely", "You may rely on it", "As I see it, yes", 

@@ -9,13 +9,12 @@ class Economy(commands.Cog):
         self.bot = bot
     
     @commands.command(aliases=["bal"])
-    async def balance(self, ctx, member: discord.Member = None):
+    async def balance(self, ctx):
         """ Count your moolah! 🪙 """
-        if member == None:
-            member = ctx.message.author
-        data = await db.get_user(member)
+        user = ctx.message.author
+        data = await db.get_user(user)
         desc = f"  Wallet: {data[2]} 🪙 \n    Bank: {data[3]} 🪙 / {data[4]} 🪙"
-        e = discord.Embed(title="Your Moolah", description=desc,
+        e = discord.Embed(title=f"{user.name}'s Moolah", description=desc,
                           color=discord.Color.green())
         await ctx.send(embed=e)
     
@@ -47,10 +46,13 @@ class Economy(commands.Cog):
 
         if income == 0:
             desc = f"Your efforts were miserable. You earned 0 🪙."
+            color = discord.Color.red()
         else:
             desc = f"You grovelled on your knees for {income} 🪙."
+            color = discord.Color.dark_grey()
+
         e = discord.Embed(title=f"{user.name}'s Begging", description=desc,
-                          color=discord.Color.dark_gray())
+                          color=color)
 
         await ctx.send(embed=e)
 
@@ -60,18 +62,31 @@ class Economy(commands.Cog):
 
     @commands.command(aliases=["dep"])
     @commands.cooldown(rate=1, per=3.0, type=commands.BucketType.user)
-    async def deposit(self, ctx, amount: int):
+    async def deposit(self, ctx, amount):
         """ 💸 Keep your notes safe in the bank vault! 💸 """
         user = ctx.message.author
         data = await db.get_user(user)
-        if int(data[3]) + amount > int(data[4]):
+        error = None
+
+        if amount == "all":
+            amount = data[2]
+        else:
+            amount = int(amount)
+
+        if (int(data[3]) + amount) > int(data[4]):
             desc = f"""The bank denied your deposit of {amount} 🪙, because you \n
 don't have enough space in your bank account."""
+            error = True
+        elif int(data[2]) < amount:
+            desc = f"You don't have {amount} 🪙 in your wallet :("
+            error = True
         else:
             desc = f"You deposited {amount} 🪙 into your bank account"
 
         e = discord.Embed(description=desc, color=discord.Color.green())
         await ctx.send(embed=e)
+        if error:
+            return
 
         data = await db.get_user(user)
         new_wallet_bal = str(int(data[2]) - amount)
@@ -81,17 +96,27 @@ don't have enough space in your bank account."""
 
     @commands.command(aliases=["with"])
     @commands.cooldown(rate=1, per=3.0, type=commands.BucketType.user)
-    async def withdraw(self, ctx, amount: int):
+    async def withdraw(self, ctx, amount):
         user = ctx.message.author
         data = await db.get_user(user)
+        error = None
+
+        if amount == "all":
+            amount = data[3]
+        else:
+            amount = int(amount)
+
         if amount > int(data[3]):
             desc = f"""The bank denied your withdrawal of {amount} 🪙, because \n
 you don't have enough moolah in your account."""
+            error = True
         else:
             desc = f"You withdrew {amount} 🪙 from your bank account"
 
         e = discord.Embed(description=desc, color=discord.Color.green())
         await ctx.send(embed=e)
+        if error:
+            return
 
         data = await db.get_user(user)
         new_wallet_bal = str(int(data[2]) + amount)

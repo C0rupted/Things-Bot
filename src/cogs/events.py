@@ -1,7 +1,6 @@
 from discord.ext import commands
 from discord.ext.commands import errors
 
-from lib.db import register_user
 
 class Events(commands.Cog):
     def __init__(self, bot):
