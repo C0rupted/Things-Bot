@@ -287,10 +287,11 @@ class Music(commands.Cog):
         await ctx.send('An error occurred: {}'.format(str(error)))
 
     @music.command(invoke_without_subcommand=True)
-    async def join_vc(self, ctx: commands.Context, *, channel: discord.VoiceChannel = None):
-        """Joins a voice channel."""
+    async def join(self, ctx: commands.Context, *, channel: discord.VoiceChannel = None):
+        """Joins a voice channel.
+        If no channel was specified, it joins your channel."""
 
-        destination = channel
+        destination = channel or ctx.author.voice.channel
         if ctx.voice_state.voice:
             await ctx.voice_state.voice.move_to(destination)
             return
@@ -486,7 +487,7 @@ class Music(commands.Cog):
                 await ctx.voice_state.songs.put(song)
                 await ctx.send('Enqueued {}'.format(str(source)))
 
-    @join_vc.before_invoke
+    @join.before_invoke
     @play.before_invoke
     async def ensure_voice_state(self, ctx: commands.Context):
         if not ctx.author.voice or not ctx.author.voice.channel:
