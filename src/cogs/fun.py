@@ -123,19 +123,4 @@ class Fun_Commands(commands.Cog):
                             color=discord.Color.random())
         meme.set_image(url=f"{response['url']}")
         await ctx.send(embed=meme)
-    
-    @commands.command(aliases=["slots", "bet"])
-    @commands.cooldown(rate=1, per=3.0, type=commands.BucketType.user)
-    async def slot(self, ctx):
-        """ Roll the slot machine """
-        emojis = "🍎🍊🍐🍋🍉🍇🍓🍒"
-        a, b, c = [random.choice(emojis) for g in range(3)]
-        slotmachine = f"**[ {a} {b} {c} ]\n{ctx.author.name}**,"
-
-        if (a == b == c):
-            await ctx.send(f"{slotmachine} All matching, you won! 🎉")
-        elif (a == b) or (a == c) or (b == c):
-            await ctx.send(f"{slotmachine} 2 in a row, you won! 🎉")
-        else:
-            await ctx.send(f"{slotmachine} No match, you lost 😢")
 

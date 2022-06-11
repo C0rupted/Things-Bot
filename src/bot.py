@@ -7,12 +7,13 @@ from cogs.events import Events
 from cogs.info import Information
 from cogs.fun import Fun_Commands
 from cogs.economy import Economy
+from cogs.gambling import Gambling
 from cogs.music import Music
 
 
 class Bot(AutoShardedBot):
     def __init__(self, *args, prefix=None, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, intents=discord.Intents.all(), **kwargs)
         self.prefix = prefix
 
 
@@ -28,6 +29,7 @@ class Bot(AutoShardedBot):
         self.add_cog(Encryption(self))
         self.add_cog(Fun_Commands(self))
         self.add_cog(Information(self))
+        self.add_cog(Gambling(self))
         self.add_cog(Economy(self))
         self.add_cog(Music(self))
 

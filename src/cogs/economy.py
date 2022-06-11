@@ -1,8 +1,11 @@
 import random
 import discord
 from discord.ext import commands
+from discord import ActionRow, Button, ButtonStyle
 
 import lib.db as db
+from lib.data import scavenge_places
+
 
 class Economy(commands.Cog):
     def __init__(self, bot):
@@ -56,6 +59,44 @@ class Economy(commands.Cog):
 
         await ctx.send(embed=e)
 
+        data = await db.get_user(user)
+        new_bal = str(int(data[2]) + income)
+        await db.set_value(user, "wallet", new_bal)
+
+    @commands.command(aliases=["scav"])
+    @commands.cooldown(rate=1, per=30.0, type=commands.BucketType.user)
+    async def scavenge(self, ctx):
+        """ Scour random areas to find some ol' 🪙! """
+        user = ctx.message.author
+
+        places = random.sample(scavenge_places, 3)
+        components = [ActionRow(Button(label=places[0][1],
+                                        custom_id=places[0][0],
+                                        style=ButtonStyle.blurple),
+                                Button(label=places[1][1],
+                                        custom_id=places[1][0],
+                                        style=ButtonStyle.blurple),
+                                Button(label=places[2][1],
+                                        custom_id=places[2][0],
+                                        style=ButtonStyle.blurple)),
+        ]
+
+        e = discord.Embed(title=f"{user.name}'s Scavenging", description="Where will you go searching?",
+                          color=discord.Color.dark_grey())
+        msg = await ctx.send(embed=e, components=components)
+    
+        def _check(i: discord.ComponentInteraction, b):
+            return i.message == msg and i.member == ctx.author
+
+        interaction, button = await self.bot.wait_for('button_click', check=_check)
+
+        edited_embed = e
+        scavenge_data = scavenge_places[int(button.custom_id)]
+        income = random.randint(scavenge_data[3], scavenge_data[4])
+        e.description = scavenge_data[2].format(income)
+        components = [components[0].disable_all_buttons()]
+        await interaction.edit(embed=edited_embed, components=components)
+        
         data = await db.get_user(user)
         new_bal = str(int(data[2]) + income)
         await db.set_value(user, "wallet", new_bal)
